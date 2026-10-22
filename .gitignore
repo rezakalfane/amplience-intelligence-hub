@@ -1,0 +1,17 @@
+node_modules
+.next
+.data
+.env.local
+.env*.local
+*.tsbuildinfo
+next-env.d.ts
+test-results
+playwright-report
+.DS_Store
+backups
+screenshots/*-live-*
+screenshots/live-*
+.vercel
+.env*
+!.env.example
+graphify-out
