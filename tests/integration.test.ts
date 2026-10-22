@@ -311,3 +311,16 @@ describe("OpenAI provider (mocked)", () => {
   });
 });
 
+
+describe("environment parsing", () => {
+  it("unwraps values that kept their .env quotes", async () => {
+    vi.resetModules();
+    vi.stubEnv("DATA_MODE", '"live"');
+    vi.stubEnv("OPENAI_REASONING_EFFORT", '"low"');
+    vi.stubEnv("OPENAI_PRICE_INPUT_PER_MTOK", '"0.10"');
+    vi.stubEnv("ENABLE_CMS_WRITES", '"false"');
+    const { getEnv } = await import("@/lib/security/env");
+    expect(getEnv()).toMatchObject({ DATA_MODE: "live", OPENAI_REASONING_EFFORT: "low", OPENAI_PRICE_INPUT_PER_MTOK: 0.1, ENABLE_CMS_WRITES: false });
+    vi.unstubAllEnvs();
+  });
+});

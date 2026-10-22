@@ -5,10 +5,12 @@ import type { LinkBase } from "@/lib/domain/amp-links";
 export const REASONING_EFFORTS = ["none", "minimal", "low", "medium", "high", "xhigh"] as const;
 export type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
 
-const blank = (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v);
+/** Values pasted with their .env quotes (`"live"`) are unwrapped instead of failing validation. */
+const unquote = (v: string) => (/^(["'])[\s\S]*\1$/.test(v.trim()) ? v.trim().slice(1, -1) : v);
+const blank = (v: unknown) => (typeof v !== "string" ? v : unquote(v).trim() === "" ? undefined : unquote(v));
 const str = z.preprocess(blank, z.string().optional());
-const bool = z.preprocess((v) => (typeof v === "string" ? v.trim().toLowerCase() === "true" : v), z.boolean().default(false));
-const num = z.preprocess((v) => (blank(v) === undefined ? undefined : Number(v)), z.number().positive().optional());
+const bool = z.preprocess((v) => (typeof v === "string" ? unquote(v).trim().toLowerCase() === "true" : v), z.boolean().default(false));
+const num = z.preprocess((v) => (blank(v) === undefined ? undefined : Number(blank(v))), z.number().positive().optional());
 
 const EnvSchema = z.object({
   DATA_MODE: z.preprocess(blank, z.enum(["live", "demo"]).default("demo")),
@@ -34,9 +36,9 @@ const EnvSchema = z.object({
   OPENAI_REASONING_EFFORT: z.preprocess(blank, z.enum(REASONING_EFFORTS).optional()),
   OPENAI_PRICE_INPUT_PER_MTOK: num,
   OPENAI_PRICE_OUTPUT_PER_MTOK: num,
-  AI_MAX_USD_PER_BATCH: z.preprocess((v) => (blank(v) === undefined ? 2 : Number(v)), z.number().positive()),
+  AI_MAX_USD_PER_BATCH: z.preprocess((v) => (blank(v) === undefined ? 2 : Number(blank(v))), z.number().positive()),
   AI_SEND_CONTENT_TO_OPENAI: bool,
-  SCAN_MAX_ITEMS_PER_TYPE: z.preprocess((v) => (blank(v) === undefined ? 200 : Number(v)), z.number().int().positive().max(2000)),
+  SCAN_MAX_ITEMS_PER_TYPE: z.preprocess((v) => (blank(v) === undefined ? 200 : Number(blank(v))), z.number().int().positive().max(2000)),
   CRITICAL_LOCALES: str,
   HUB_ACTOR_ID: z.preprocess(blank, z.string().default("reviewer@local")),
 });
